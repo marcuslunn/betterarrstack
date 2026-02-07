@@ -58,6 +58,7 @@ if [[ ! -f "$PROJECT_DIR/.env" ]]; then
   cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
   sed -i "s/^PUID=.*/PUID=$REAL_UID/" "$PROJECT_DIR/.env"
   sed -i "s/^PGID=.*/PGID=$REAL_GID/" "$PROJECT_DIR/.env"
+  chown "$REAL_USER:$REAL_USER" "$PROJECT_DIR/.env"
   echo "   PUID=$REAL_UID, PGID=$REAL_GID injected into .env"
   echo "   >>> Edit .env to fill in WIREGUARD_PRIVATE_KEY, PLEX_CLAIM_TOKEN, etc."
 else
