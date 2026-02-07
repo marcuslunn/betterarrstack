@@ -28,7 +28,7 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - ./config/gluetun:/gluetun
+      - ./arrdrive/config/gluetun:/gluetun
     restart: unless-stopped
 
   # ── VPN-Routed Services ─────────────────────────────────────
@@ -44,8 +44,8 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ./config/sonarr:/config
-      - ./data:/data
+      - ./arrdrive/config/sonarr:/config
+      - ./arrdrive/data:/data
     restart: unless-stopped
 
   radarr:
@@ -60,8 +60,8 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ./config/radarr:/config
-      - ./data:/data
+      - ./arrdrive/config/radarr:/config
+      - ./arrdrive/data:/data
     restart: unless-stopped
 
   prowlarr:
@@ -76,7 +76,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ./config/prowlarr:/config
+      - ./arrdrive/config/prowlarr:/config
     restart: unless-stopped
 
   sabnzbd:
@@ -91,8 +91,8 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ./config/sabnzbd:/config
-      - ./data/sabnzbd:/data/sabnzbd
+      - ./arrdrive/config/sabnzbd:/config
+      - ./arrdrive/data/sabnzbd:/data/sabnzbd
     restart: unless-stopped
 
   # ── Media Server ────────────────────────────────────────────
@@ -118,8 +118,8 @@ services:
       - "32414:32414/udp"
       - "32469:32469"
     volumes:
-      - ./config/plex:/config
-      - ./data/Media:/data/Media:ro
+      - ./arrdrive/config/plex:/config
+      - ./arrdrive/data/Media:/data/Media:ro
     restart: unless-stopped
 
   # ── Plex Monitoring ─────────────────────────────────────────
@@ -133,7 +133,7 @@ services:
     ports:
       - "8181:8181"
     volumes:
-      - ./config/tautulli:/config
+      - ./arrdrive/config/tautulli:/config
     restart: unless-stopped
 
   # ── Request Management ──────────────────────────────────────
@@ -149,7 +149,7 @@ services:
     ports:
       - "5055:5055"
     volumes:
-      - ./config/overseerr:/config
+      - ./arrdrive/config/overseerr:/config
     restart: unless-stopped
 
   # ── Management ──────────────────────────────────────────────
@@ -160,7 +160,7 @@ services:
       - "9443:9443"
       - "8000:8000"
     volumes:
-      - ./config/portainer:/data
+      - ./arrdrive/config/portainer:/data
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
@@ -176,8 +176,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./config/prometheus:/prometheus
+      - ./arrdrive/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./arrdrive/config/prometheus:/prometheus
     restart: unless-stopped
 
   cadvisor:
@@ -267,7 +267,7 @@ services:
     restart: unless-stopped
 
   tautulli-exporter:
-    build: ./monitoring/tautulli-exporter
+    build: ./arrdrive/monitoring/tautulli-exporter
     container_name: tautulli-exporter
     environment:
       - TAUTULLI_URL=http://host.docker.internal:8181
@@ -279,7 +279,7 @@ services:
     restart: unless-stopped
 
   vpn-exporter:
-    build: ./monitoring/vpn-exporter
+    build: ./arrdrive/monitoring/vpn-exporter
     container_name: vpn-exporter
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -298,7 +298,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config/grafana:/var/lib/grafana
-      - ./monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./arrdrive/config/grafana:/var/lib/grafana
+      - ./arrdrive/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./arrdrive/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     restart: unless-stopped

@@ -16,21 +16,21 @@ echo "[$TIMESTAMP] Starting arrdocker backup..."
 mkdir -p "$STAGING_DIR/config"
 
 for svc in gluetun sonarr radarr prowlarr sabnzbd plex tautulli overseerr portainer prometheus grafana; do
-  if [[ -d "$PROJECT_DIR/config/$svc" ]]; then
+  if [[ -d "$PROJECT_DIR/arrdrive/config/$svc" ]]; then
     rsync -a \
       --exclude='Cache' \
       --exclude='Logs' \
       --exclude='logs' \
       --exclude='Transcode' \
       --exclude='MediaCover' \
-      "$PROJECT_DIR/config/$svc/" "$STAGING_DIR/config/$svc/"
+      "$PROJECT_DIR/arrdrive/config/$svc/" "$STAGING_DIR/config/$svc/"
   fi
 done
 
 # ── Copy compose, env, and monitoring config ──────────────────
 cp "$PROJECT_DIR/docker-compose.yml" "$STAGING_DIR/"
 [[ -f "$PROJECT_DIR/.env" ]] && cp "$PROJECT_DIR/.env" "$STAGING_DIR/"
-cp -r "$PROJECT_DIR/monitoring" "$STAGING_DIR/"
+cp -r "$PROJECT_DIR/arrdrive/monitoring" "$STAGING_DIR/"
 
 # ── Create archive ────────────────────────────────────────────
 echo "  Creating archive: $ARCHIVE_NAME"

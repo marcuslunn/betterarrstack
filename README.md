@@ -173,46 +173,47 @@ arrdocker/
 ├── .gitignore
 ├── docker-compose.yml
 ├── README.md
-├── monitoring/
-│   ├── prometheus.yml
-│   ├── vpn-exporter/
-│   │   ├── Dockerfile
-│   │   └── exporter.sh
-│   ├── tautulli-exporter/
-│   │   ├── Dockerfile
-│   │   └── exporter.sh
-│   └── grafana/
-│       ├── dashboards.yml
-│       └── dashboards/
-│           ├── host-health.json
-│           ├── docker-containers.json
-│           ├── vpn-health.json
-│           ├── media-library.json
-│           ├── download-pipeline.json
-│           └── plex-tautulli.json
+├── arrdrive/
+│   ├── monitoring/
+│   │   ├── prometheus.yml
+│   │   ├── vpn-exporter/
+│   │   │   ├── Dockerfile
+│   │   │   └── exporter.sh
+│   │   ├── tautulli-exporter/
+│   │   │   ├── Dockerfile
+│   │   │   └── exporter.sh
+│   │   └── grafana/
+│   │       ├── dashboards.yml
+│   │       └── dashboards/
+│   │           ├── host-health.json
+│   │           ├── docker-containers.json
+│   │           ├── vpn-health.json
+│   │           ├── media-library.json
+│   │           ├── download-pipeline.json
+│   │           └── plex-tautulli.json
+│   ├── config/                    # Persistent configs (git-ignored)
+│   │   ├── gluetun/
+│   │   ├── sonarr/
+│   │   ├── radarr/
+│   │   ├── prowlarr/
+│   │   ├── sabnzbd/
+│   │   ├── plex/
+│   │   ├── tautulli/
+│   │   ├── overseerr/
+│   │   ├── portainer/
+│   │   ├── prometheus/
+│   │   └── grafana/
+│   └── data/                      # Media & downloads (git-ignored)
+│       ├── sabnzbd/
+│       │   ├── complete/
+│       │   └── incomplete/
+│       └── Media/
+│           ├── TV/
+│           └── Movies/
 ├── scripts/
 │   ├── setup.sh
 │   ├── backup.sh
 │   └── vpn-healthcheck.sh
-├── config/                    # Persistent configs (git-ignored)
-│   ├── gluetun/
-│   ├── sonarr/
-│   ├── radarr/
-│   ├── prowlarr/
-│   ├── sabnzbd/
-│   ├── plex/
-│   ├── tautulli/
-│   ├── overseerr/
-│   ├── portainer/
-│   ├── prometheus/
-│   └── grafana/
-└── data/                      # Media & downloads (git-ignored)
-    ├── sabnzbd/
-    │   ├── complete/
-    │   └── incomplete/
-    └── Media/
-        ├── TV/
-        └── Movies/
 ```
 
 ## Verification
@@ -238,7 +239,7 @@ bash scripts/backup.sh
 
 ## Hardlinks
 
-Sonarr and Radarr share the same `/data` mount, which allows hardlinks when moving completed downloads from `./data/sabnzbd/complete/` to `./data/Media/`. This avoids duplicating files and saves disk space.
+Sonarr and Radarr share the same `/data` mount, which allows hardlinks when moving completed downloads from `./arrdrive/data/sabnzbd/complete/` to `./arrdrive/data/Media/`. This avoids duplicating files and saves disk space.
 
 ## License
 

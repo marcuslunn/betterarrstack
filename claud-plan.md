@@ -12,46 +12,47 @@ arrdocker/
 ├── .gitignore
 ├── docker-compose.yml            # All services in one compose file
 ├── README.md
-├── monitoring/
-│   ├── prometheus.yml            # Prometheus scrape config
-│   ├── vpn-exporter/
-│   │   ├── Dockerfile
-│   │   └── exporter.sh           # VPN health metrics for Prometheus
-│   ├── tautulli-exporter/
-│   │   ├── Dockerfile
-│   │   └── exporter.sh           # Plex/Tautulli metrics for Prometheus
-│   └── grafana/
-│       ├── dashboards.yml        # Dashboard provisioning config
-│       └── dashboards/
-│           ├── host-health.json
-│           ├── docker-containers.json
-│           ├── vpn-health.json
-│           ├── media-library.json
-│           ├── download-pipeline.json
-│           └── plex-tautulli.json
+├── arrdrive/
+│   ├── monitoring/
+│   │   ├── prometheus.yml            # Prometheus scrape config
+│   │   ├── vpn-exporter/
+│   │   │   ├── Dockerfile
+│   │   │   └── exporter.sh           # VPN health metrics for Prometheus
+│   │   ├── tautulli-exporter/
+│   │   │   ├── Dockerfile
+│   │   │   └── exporter.sh           # Plex/Tautulli metrics for Prometheus
+│   │   └── grafana/
+│   │       ├── dashboards.yml        # Dashboard provisioning config
+│   │       └── dashboards/
+│   │           ├── host-health.json
+│   │           ├── docker-containers.json
+│   │           ├── vpn-health.json
+│   │           ├── media-library.json
+│   │           ├── download-pipeline.json
+│   │           └── plex-tautulli.json
+│   ├── config/                       # Persistent config volumes (git-ignored)
+│   │   ├── gluetun/
+│   │   ├── sonarr/
+│   │   ├── radarr/
+│   │   ├── prowlarr/
+│   │   ├── sabnzbd/
+│   │   ├── plex/
+│   │   ├── tautulli/
+│   │   ├── overseerr/
+│   │   ├── portainer/
+│   │   ├── prometheus/
+│   │   └── grafana/
+│   └── data/                         # Media & downloads (git-ignored)
+│       ├── sabnzbd/
+│       │   ├── complete/
+│       │   └── incomplete/
+│       └── Media/
+│           ├── TV/
+│           └── Movies/
 ├── scripts/
 │   ├── setup.sh                  # Ubuntu Server initial setup
 │   ├── backup.sh                 # Config backup to Proton Drive via rclone
 │   └── vpn-healthcheck.sh        # Cron-based VPN monitor & auto-restart
-├── config/                       # Persistent config volumes (git-ignored)
-│   ├── gluetun/
-│   ├── sonarr/
-│   ├── radarr/
-│   ├── prowlarr/
-│   ├── sabnzbd/
-│   ├── plex/
-│   ├── tautulli/
-│   ├── overseerr/
-│   ├── portainer/
-│   ├── prometheus/
-│   └── grafana/
-└── data/                         # Media & downloads (git-ignored)
-    ├── sabnzbd/
-    │   ├── complete/
-    │   └── incomplete/
-    └── Media/
-        ├── TV/
-        └── Movies/
 ```
 
 ## Network Architecture
@@ -94,7 +95,7 @@ arrdocker/
 ## Files
 
 ### 1. `.gitignore`
-Ignore `.env`, `config/`, `data/`
+Ignore `.env`, `arrdrive/config/`, `arrdrive/data/`
 
 ### 2. `.env.example`
 All environment variables with placeholders:
@@ -107,9 +108,9 @@ All environment variables with placeholders:
 - `TAUTULLI_API_KEY` - from Tautulli > Settings > Web Interface > API Key
 - `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD`
 
-No `MEDIA_ROOT` variable needed - paths are relative `./data` in compose file.
+No `MEDIA_ROOT` variable needed - paths are relative `./arrdrive/data` in compose file.
 
-### 3. `monitoring/prometheus.yml`
+### 3. `arrdrive/monitoring/prometheus.yml`
 Scrape targets (15s default interval, 30d retention):
 - `localhost:9090` (self)
 - `cadvisor:8080` (Docker DNS)
@@ -152,19 +153,19 @@ Key details:
 - Plex gets Intel Quick Sync via `devices: ["/dev/dri:/dev/dri"]`
 - cAdvisor remapped to 8081 to avoid SABnzbd conflict on 8080
 - Exportarr sidecars reach *arr services via `host.docker.internal`
-- Grafana auto-provisions dashboards from `monitoring/grafana/dashboards/`
+- Grafana auto-provisions dashboards from `arrdrive/monitoring/grafana/dashboards/`
 
 Volume mounts:
-- Sonarr: `./config/sonarr:/config`, `./data:/data`
-- Radarr: `./config/radarr:/config`, `./data:/data`
-- SABnzbd: `./config/sabnzbd:/config`, `./data/sabnzbd:/data/sabnzbd`
-- Plex: `./config/plex:/config`, `./data/Media:/data/Media:ro`
-- Prowlarr: `./config/prowlarr:/config` (no media access needed)
-- Tautulli: `./config/tautulli:/config`
+- Sonarr: `./arrdrive/config/sonarr:/config`, `./arrdrive/data:/data`
+- Radarr: `./arrdrive/config/radarr:/config`, `./arrdrive/data:/data`
+- SABnzbd: `./arrdrive/config/sabnzbd:/config`, `./arrdrive/data/sabnzbd:/data/sabnzbd`
+- Plex: `./arrdrive/config/plex:/config`, `./arrdrive/data/Media:/data/Media:ro`
+- Prowlarr: `./arrdrive/config/prowlarr:/config` (no media access needed)
+- Tautulli: `./arrdrive/config/tautulli:/config`
 
-The shared `/data` mount for Sonarr/Radarr allows hardlinks when moving completed downloads from `./data/sabnzbd/complete/` to `./data/Media/`. This avoids copying files and saves disk space.
+The shared `/data` mount for Sonarr/Radarr allows hardlinks when moving completed downloads from `./arrdrive/data/sabnzbd/complete/` to `./arrdrive/data/Media/`. This avoids copying files and saves disk space.
 
-### 5. `monitoring/vpn-exporter/`
+### 5. `arrdrive/monitoring/vpn-exporter/`
 Custom lightweight Alpine container that:
 - Polls Gluetun's API (`localhost:9999/v1/publicip/ip`) for VPN status
 - Checks container uptime via Docker socket
@@ -173,7 +174,7 @@ Custom lightweight Alpine container that:
   - `vpn_connection_failures_total` (counter)
   - `vpn_uptime_seconds` (gauge)
 
-### 6. `monitoring/tautulli-exporter/`
+### 6. `arrdrive/monitoring/tautulli-exporter/`
 Custom lightweight Alpine container that:
 - Polls Tautulli's API for activity, bandwidth, and library stats
 - Serves Prometheus metrics on port 9711:
@@ -181,8 +182,8 @@ Custom lightweight Alpine container that:
   - `tautulli_wan_bandwidth_kbps`, `tautulli_lan_bandwidth_kbps`, `tautulli_total_bandwidth_kbps`
   - `tautulli_library_movies`, `tautulli_library_shows`, `tautulli_library_seasons`
 
-### 7. `monitoring/grafana/dashboards.yml`
-Provisioning config that auto-loads all JSON dashboards from `monitoring/grafana/dashboards/` into an "arrdocker" folder in Grafana.
+### 7. `arrdrive/monitoring/grafana/dashboards.yml`
+Provisioning config that auto-loads all JSON dashboards from `arrdrive/monitoring/grafana/dashboards/` into an "arrdocker" folder in Grafana.
 
 ### 8. Grafana Dashboards (6 total, auto-provisioned)
 
@@ -222,8 +223,8 @@ Provisioning config that auto-loads all JSON dashboards from `monitoring/grafana
 Ubuntu Server first-run script (run with sudo):
 1. Install packages: curl, wget, git, rsync, rclone
 2. Docker is presumed already installed
-3. Create `./data` directories (`sabnzbd/complete`, `sabnzbd/incomplete`, `Media/TV`, `Media/Movies`)
-4. Create `./config` directories for all 11 services
+3. Create `./arrdrive/data` directories (`sabnzbd/complete`, `sabnzbd/incomplete`, `Media/TV`, `Media/Movies`)
+4. Create `./arrdrive/config` directories for all 11 services
 5. Set ownership to the invoking user
 6. Copy `.env.example` to `.env`, inject detected PUID/PGID, chown to invoking user
 7. Add cron jobs:
@@ -240,7 +241,7 @@ Cron-based VPN monitor (every 5 minutes):
 ### 11. `scripts/backup.sh`
 Automated config backup:
 - Uses rsync to stage config dirs (excludes Cache, Logs, Transcode, MediaCover)
-- Also copies `docker-compose.yml`, `.env`, `monitoring/`
+- Also copies `docker-compose.yml`, `.env`, `arrdrive/monitoring/`
 - Creates timestamped `.tar.gz` archive
 - Uploads to Proton Drive via `rclone copy`
 - Prunes remote backups older than 30 days

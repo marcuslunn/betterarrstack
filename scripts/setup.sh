@@ -35,21 +35,21 @@ fi
 
 # ── Create directory structure ────────────────────────────────
 echo ">> Creating data directories..."
-mkdir -p "$PROJECT_DIR/data/sabnzbd/complete"
-mkdir -p "$PROJECT_DIR/data/sabnzbd/incomplete"
-mkdir -p "$PROJECT_DIR/data/Media/TV"
-mkdir -p "$PROJECT_DIR/data/Media/Movies"
+mkdir -p "$PROJECT_DIR/arrdrive/data/sabnzbd/complete"
+mkdir -p "$PROJECT_DIR/arrdrive/data/sabnzbd/incomplete"
+mkdir -p "$PROJECT_DIR/arrdrive/data/Media/TV"
+mkdir -p "$PROJECT_DIR/arrdrive/data/Media/Movies"
 
 echo ">> Creating config directories..."
 for svc in gluetun sonarr radarr prowlarr sabnzbd plex tautulli overseerr portainer prometheus grafana; do
-  mkdir -p "$PROJECT_DIR/config/$svc"
+  mkdir -p "$PROJECT_DIR/arrdrive/config/$svc"
 done
 
 # ── Set ownership ─────────────────────────────────────────────
 REAL_UID=$(id -u "$REAL_USER")
 REAL_GID=$(id -g "$REAL_USER")
 
-chown -R "$REAL_USER:$REAL_USER" "$PROJECT_DIR/config" "$PROJECT_DIR/data"
+chown -R "$REAL_USER:$REAL_USER" "$PROJECT_DIR/arrdrive/config" "$PROJECT_DIR/arrdrive/data"
 echo "   Ownership set to $REAL_USER ($REAL_UID:$REAL_GID)"
 
 # ── Create .env from template ────────────────────────────────
