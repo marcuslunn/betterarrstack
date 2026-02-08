@@ -12,6 +12,7 @@ services:
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
       - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-Netherlands}
+      - TZ=${TZ}=value
     ports:
       # Sonarr
       - "8989:8989"
@@ -133,7 +134,8 @@ services:
     ports:
       - "8181:8181"
     volumes:
-      - ./arrdrive/config/tautulli:/config
+      - ./arrdrive/config/tautulli/config:/config
+      - ./arrdrive/config/tautulli/notifications:/notifications
     restart: unless-stopped
 
   # ── Request Management ──────────────────────────────────────
@@ -156,9 +158,11 @@ services:
   portainer:
     image: portainer/portainer-ce:lts
     container_name: portainer
+    environment:
+      - TZ=${TZ}=value
     ports:
       - "9443:9443"
-      - "8000:8000"
+     #- "8000:8000"
     volumes:
       - ./arrdrive/config/portainer:/data
       - /var/run/docker.sock:/var/run/docker.sock
@@ -168,6 +172,8 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    environment:
+      - TZ=${TZ}=value
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=30d"
@@ -176,13 +182,15 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./arrdrive/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./arrdrive/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./arrdrive/config/prometheus:/prometheus
     restart: unless-stopped
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
+    environment:
+      - TZ=${TZ}=value
     privileged: true
     ports:
       - "8081:8080"
@@ -196,6 +204,8 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
+    environment:
+      - TZ=${TZ}=value
     ports:
       - "9100:9100"
     volumes:
@@ -218,6 +228,7 @@ services:
       - PORT=9707
       - URL=http://host.docker.internal:8989
       - APIKEY=${SONARR_API_KEY}
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -232,6 +243,7 @@ services:
       - PORT=9708
       - URL=http://host.docker.internal:7878
       - APIKEY=${RADARR_API_KEY}
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -246,6 +258,7 @@ services:
       - PORT=9709
       - URL=http://host.docker.internal:9696
       - APIKEY=${PROWLARR_API_KEY}
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -260,6 +273,7 @@ services:
       - PORT=9710
       - URL=http://host.docker.internal:8080
       - APIKEY=${SABNZBD_API_KEY}
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -272,6 +286,7 @@ services:
     environment:
       - TAUTULLI_URL=http://host.docker.internal:8181
       - TAUTULLI_API_KEY=${TAUTULLI_API_KEY}
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -281,6 +296,8 @@ services:
   vpn-exporter:
     build: ./arrdrive/monitoring/vpn-exporter
     container_name: vpn-exporter
+    environment:
+      - TZ=${TZ}=value
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -295,6 +312,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - TZ=${TZ}=value
     ports:
       - "3000:3000"
     volumes:
