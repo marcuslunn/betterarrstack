@@ -307,6 +307,19 @@ services:
       - "9101:9101"
     restart: unless-stopped
 
+  health-exporter:
+    build: ./arrdrive/monitoring/health-exporter
+    container_name: health-exporter
+    environment:
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "9112:9112"
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana-enterprise:latest
     container_name: grafana

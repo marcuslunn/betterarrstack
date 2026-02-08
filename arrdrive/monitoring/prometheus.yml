@@ -40,3 +40,8 @@ scrape_configs:
     scrape_interval: 30s
     static_configs:
       - targets: ["tautulli-exporter:9711"]
+
+  - job_name: "health-exporter"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["health-exporter:9112"]
