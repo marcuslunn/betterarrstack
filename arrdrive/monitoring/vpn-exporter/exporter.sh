@@ -7,11 +7,11 @@ PORT=9101
 CHECK_INTERVAL=30
 
 while true; do
-  # Query gluetun health
+  # Query gluetun health - check HTTP status and validate response contains an IP
   VPN_IP=$(wget -qO- --timeout=5 "$GLUETUN_API/v1/publicip/ip" 2>/dev/null || echo "")
   RESTART_COUNT_FILE="/tmp/vpn_restart_count"
 
-  if [ -n "$VPN_IP" ] && [ "$VPN_IP" != "null" ]; then
+  if echo "$VPN_IP" | grep -qE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'; then
     VPN_UP=1
   else
     VPN_UP=0

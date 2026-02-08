@@ -1,5 +1,5 @@
 FROM alpine:latest
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget netcat-openbsd
 COPY exporter.sh /usr/local/bin/exporter.sh
 RUN chmod +x /usr/local/bin/exporter.sh
 EXPOSE 9101
