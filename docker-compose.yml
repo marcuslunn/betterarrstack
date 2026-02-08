@@ -26,6 +26,8 @@ services:
       - "8080:8080"
       # Gluetun HTTP proxy (used by vpn-exporter for IP verification)
       - "8888:8888"
+      # Gluetun control API (used by vpn-exporter for VPN status)
+      - "9999:9999"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "--timeout=10", "http://localhost:9999/v1/publicip/ip"]
       interval: 60s
