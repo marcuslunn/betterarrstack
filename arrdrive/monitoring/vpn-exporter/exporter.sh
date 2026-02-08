@@ -45,10 +45,11 @@ while true; do
   # and also curl directly for the host-side IP.
 
   # -- VPN-side: ask gluetun's HTTP proxy (port 8888) to reach icanhazip --
+  # Use plain HTTP so wget actually routes through the proxy (HTTPS bypasses http_proxy)
   VPN_START=$(date +%s%N 2>/dev/null || date +%s)
   VPN_ICANHAZIP_RESPONSE=$(wget -qO- -S --timeout=10 \
     -e "http_proxy=http://host.docker.internal:8888" \
-    "$IP_CHECK_URL" 2>&1) || true
+    "http://icanhazip.com" 2>&1) || true
   VPN_END=$(date +%s%N 2>/dev/null || date +%s)
 
   # Extract status code from wget -S output (looks like "  HTTP/1.1 200 OK")
