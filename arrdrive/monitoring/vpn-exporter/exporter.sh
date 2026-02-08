@@ -3,7 +3,7 @@
 # Polls gluetun's API and verifies VPN via icanhazip.com IP comparison
 # Serves metrics on port 9101
 
-GLUETUN_API="http://host.docker.internal:9999"
+GLUETUN_API="http://host.docker.internal:8000"
 IP_CHECK_URL="https://icanhazip.com"
 PORT=9101
 CHECK_INTERVAL=30

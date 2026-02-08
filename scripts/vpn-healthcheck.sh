@@ -17,7 +17,7 @@ if ! docker inspect -f '{{.State.Running}}' gluetun 2>/dev/null | grep -q true; 
 fi
 
 # Query gluetun's built-in health endpoint (returns JSON with "ip" field)
-VPN_IP=$(docker exec gluetun wget -qO- --timeout=10 http://localhost:9999/v1/publicip/ip 2>/dev/null || echo "")
+VPN_IP=$(docker exec gluetun wget -qO- --timeout=10 http://localhost:8000/v1/publicip/ip 2>/dev/null || echo "")
 
 if [[ -z "$VPN_IP" || "$VPN_IP" == "null" ]]; then
   echo "$LOG_PREFIX VPN connection DOWN - no public IP returned. Restarting gluetun..."
@@ -25,7 +25,7 @@ if [[ -z "$VPN_IP" || "$VPN_IP" == "null" ]]; then
   sleep 20
 
   # Verify recovery
-  VPN_IP=$(docker exec gluetun wget -qO- --timeout=10 http://localhost:9999/v1/publicip/ip 2>/dev/null || echo "")
+  VPN_IP=$(docker exec gluetun wget -qO- --timeout=10 http://localhost:8000/v1/publicip/ip 2>/dev/null || echo "")
   if [[ -z "$VPN_IP" || "$VPN_IP" == "null" ]]; then
     echo "$LOG_PREFIX VPN still DOWN after restart. Manual intervention may be required."
     exit 1
