@@ -24,9 +24,11 @@ fetch_host_ip
 
 while true; do
   # ── 1. Query gluetun's own public-IP API ──────────────────────────
-  VPN_IP=$(wget -qO- --timeout=5 "$GLUETUN_API/v1/publicip/ip" 2>/dev/null || echo "")
+  VPN_RAW=$(wget -qO- --timeout=5 "$GLUETUN_API/v1/publicip/ip" 2>/dev/null || echo "")
+  # Response is JSON: {"public_ip":"1.2.3.4", ...} — extract the IP
+  VPN_IP=$(echo "$VPN_RAW" | grep -oE '"public_ip":"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
 
-  if echo "$VPN_IP" | grep -qE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'; then
+  if echo "$VPN_IP" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
     VPN_UP=1
   else
     VPN_UP=0
