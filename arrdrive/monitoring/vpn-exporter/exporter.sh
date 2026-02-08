@@ -90,8 +90,8 @@ while true; do
   CACHED_HOST_IP=$(cat "$HOST_IP_FILE" 2>/dev/null || echo "")
 
   # ── 3. Compare IPs ───────────────────────────────────────────────
-  # VPN is working correctly if the VPN IP differs from the host IP
-  if [ -n "$VPN_ICANHAZIP_IP" ] && [ -n "$CACHED_HOST_IP" ] && [ "$VPN_ICANHAZIP_IP" != "$CACHED_HOST_IP" ]; then
+  # VPN is working correctly if the gluetun API IP differs from the host IP
+  if [ -n "$VPN_IP" ] && [ -n "$CACHED_HOST_IP" ] && [ "$VPN_IP" != "$CACHED_HOST_IP" ]; then
     IP_DIFFERENT=1
   else
     IP_DIFFERENT=0

@@ -38,7 +38,7 @@
     {
       "id": 6,
       "title": "IP Protection",
-      "description": "1 = VPN IP differs from host IP (protected), 0 = IPs match or check failed (exposed)",
+      "description": "1 = Gluetun API IP differs from host IP (protected), 0 = IPs match or check failed (exposed)",
       "type": "stat",
       "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -190,64 +190,80 @@
     },
     {
       "id": 7,
-      "title": "VPN icanhazip Status",
-      "description": "HTTP status code from icanhazip.com via VPN proxy",
+      "title": "VPN Public IP",
+      "description": "Current VPN public IP from Gluetun API",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 3, "x": 15, "y": 6 },
+      "gridPos": { "h": 4, "w": 4, "x": 15, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
-          "expr": "vpn_icanhazip_status_code",
-          "legendFormat": "Status"
+          "expr": "vpn_public_ip_info{source=\"gluetun_api\"}",
+          "legendFormat": "{{ip}}",
+          "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "mappings": [
-            { "options": { "from": 200, "to": 200, "result": { "text": "200 OK", "color": "green" } }, "type": "range" },
-            { "options": { "from": 0, "to": 0, "result": { "text": "FAIL", "color": "red" } }, "type": "range" }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 200 },
-              { "color": "orange", "value": 201 }
+              { "color": "blue", "value": null }
             ]
-          }
+          },
+          "color": { "fixedColor": "blue", "mode": "fixed" }
         },
         "overrides": []
+      },
+      "options": {
+        "textMode": "name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        }
       }
     },
     {
       "id": 8,
-      "title": "Host icanhazip Status",
-      "description": "HTTP status code from icanhazip.com directly (no VPN)",
+      "title": "Host Public IP",
+      "description": "Current host public IP from icanhazip.com (direct, no VPN)",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 3, "x": 18, "y": 6 },
+      "gridPos": { "h": 4, "w": 4, "x": 19, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
-          "expr": "host_icanhazip_status_code",
-          "legendFormat": "Status"
+          "expr": "vpn_public_ip_info{source=\"icanhazip_host\"}",
+          "legendFormat": "{{ip}}",
+          "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "mappings": [
-            { "options": { "from": 200, "to": 200, "result": { "text": "200 OK", "color": "green" } }, "type": "range" },
-            { "options": { "from": 0, "to": 0, "result": { "text": "FAIL", "color": "red" } }, "type": "range" }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 200 },
-              { "color": "orange", "value": 201 }
+              { "color": "purple", "value": null }
             ]
-          }
+          },
+          "color": { "fixedColor": "purple", "mode": "fixed" }
         },
         "overrides": []
+      },
+      "options": {
+        "textMode": "name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        }
       }
     },
     {
