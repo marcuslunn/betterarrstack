@@ -52,6 +52,14 @@ REAL_GID=$(id -g "$REAL_USER")
 chown -R "$REAL_USER:$REAL_USER" "$PROJECT_DIR/arrdrive/config" "$PROJECT_DIR/arrdrive/data"
 echo "   Ownership set to $REAL_USER ($REAL_UID:$REAL_GID)"
 
+# Grafana runs as uid 472 inside the container
+chown -R 472:472 "$PROJECT_DIR/arrdrive/config/grafana"
+echo "   Grafana config ownership set to 472:472"
+
+# Prometheus runs as uid 65534 (nobody) inside the container
+chown -R 65534:65534 "$PROJECT_DIR/arrdrive/config/prometheus"
+echo "   Prometheus config ownership set to 65534:65534"
+
 # ── Create .env from template ────────────────────────────────
 if [[ ! -f "$PROJECT_DIR/.env" ]]; then
   echo ">> Creating .env from .env.example..."

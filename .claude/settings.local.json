@@ -8,7 +8,8 @@
       "WebFetch(domain:docs.portainer.io)",
       "WebFetch(domain:grafana.com)",
       "WebFetch(domain:rclone.org)",
-      "Bash(git -C /Users/marcus/Documents/projects/arrdocker status)"
+      "Bash(git -C /Users/marcus/Documents/projects/arrdocker status)",
+      "Bash(grep:*)"
     ]
   }
 }
