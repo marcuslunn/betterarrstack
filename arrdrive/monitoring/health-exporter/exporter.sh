@@ -89,8 +89,10 @@ get_probe_address() {
   name="$1"
   port="$2"
 
-  # Check if the container uses gluetun's network
-  network_mode=$(wget -qO- --timeout=3 "http://localhost/containers/${name}/json" 2>/dev/null \
+  # Check if the container uses gluetun's network (query via unix socket)
+  network_mode=$(echo -e "GET /containers/${name}/json HTTP/1.0\r\nHost: localhost\r\n\r\n" \
+    | socat - UNIX-CONNECT:"$DOCKER_SOCKET" 2>/dev/null \
+    | sed '1,/^\r$/d' \
     | grep -o '"NetworkMode":"[^"]*"' | sed 's/"NetworkMode":"//;s/"//')
 
   case "$network_mode" in

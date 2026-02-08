@@ -12,6 +12,8 @@ services:
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
       - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-Netherlands}
+      - HTTPPROXY=on
+      - HTTPPROXY_LISTENING_ADDRESS=:8888
       - TZ=${TZ}=value
     ports:
       # Sonarr
@@ -22,6 +24,8 @@ services:
       - "9696:9696"
       # SABnzbd
       - "8080:8080"
+      # Gluetun HTTP proxy (used by vpn-exporter for IP verification)
+      - "8888:8888"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "--timeout=10", "http://localhost:9999/v1/publicip/ip"]
       interval: 60s

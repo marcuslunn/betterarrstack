@@ -10,7 +10,7 @@
       "title": "VPN Status",
       "description": "1 = Connected, 0 = Disconnected",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
@@ -36,11 +36,41 @@
       }
     },
     {
+      "id": 6,
+      "title": "IP Protection",
+      "description": "1 = VPN IP differs from host IP (protected), 0 = IPs match or check failed (exposed)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "vpn_ip_different",
+          "legendFormat": "IP Check"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "EXPOSED", "color": "red" } }, "type": "value" },
+            { "options": { "1": { "text": "PROTECTED", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 2,
       "title": "VPN Uptime",
       "description": "Time since gluetun container last restarted",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
@@ -68,7 +98,7 @@
       "title": "Connection Failures (Total)",
       "description": "Cumulative VPN connectivity failures detected",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 6, "w": 3, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
@@ -91,16 +121,150 @@
       }
     },
     {
+      "id": 10,
+      "title": "Public IP Addresses",
+      "description": "Current public IPs detected from each source",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "vpn_public_ip_info",
+          "format": "table",
+          "instant": true,
+          "legendFormat": ""
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "renameByName": {
+              "source": "Source",
+              "ip": "IP Address"
+            },
+            "indexByName": {
+              "source": 0,
+              "ip": 1
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": { "type": "auto" }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Source" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "options": { "gluetun_api": { "text": "Gluetun API" } }, "type": "value" },
+                  { "options": { "icanhazip_vpn": { "text": "icanhazip (via VPN)" } }, "type": "value" },
+                  { "options": { "icanhazip_host": { "text": "icanhazip (direct)" } }, "type": "value" }
+                ]
+              },
+              { "id": "custom.width", "value": 170 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "IP Address" },
+            "properties": [
+              { "id": "custom.width", "value": 150 }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "VPN icanhazip Status",
+      "description": "HTTP status code from icanhazip.com via VPN proxy",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 15, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "vpn_icanhazip_status_code",
+          "legendFormat": "Status"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "from": 200, "to": 200, "result": { "text": "200 OK", "color": "green" } }, "type": "range" },
+            { "options": { "from": 0, "to": 0, "result": { "text": "FAIL", "color": "red" } }, "type": "range" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 200 },
+              { "color": "orange", "value": 201 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "Host icanhazip Status",
+      "description": "HTTP status code from icanhazip.com directly (no VPN)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "host_icanhazip_status_code",
+          "legendFormat": "Status"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "from": 200, "to": 200, "result": { "text": "200 OK", "color": "green" } }, "type": "range" },
+            { "options": { "from": 0, "to": 0, "result": { "text": "FAIL", "color": "red" } }, "type": "range" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 200 },
+              { "color": "orange", "value": 201 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 4,
-      "title": "VPN Status Over Time",
-      "description": "VPN connectivity history",
+      "title": "VPN Status & IP Protection Over Time",
+      "description": "VPN connectivity and IP protection history",
       "type": "timeseries",
-      "gridPos": { "h": 10, "w": 18, "x": 0, "y": 6 },
+      "gridPos": { "h": 10, "w": 15, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
           "expr": "vpn_status",
           "legendFormat": "VPN Status"
+        },
+        {
+          "expr": "vpn_ip_different",
+          "legendFormat": "IP Protected"
         }
       ],
       "fieldConfig": {
@@ -131,11 +295,54 @@
       }
     },
     {
+      "id": 9,
+      "title": "icanhazip Response Time",
+      "description": "Response time in milliseconds for icanhazip.com (VPN vs Direct)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "vpn_icanhazip_response_ms",
+          "legendFormat": "Via VPN"
+        },
+        {
+          "expr": "host_icanhazip_response_ms",
+          "legendFormat": "Direct (no VPN)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "gradientMode": "scheme"
+          },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 500 },
+              { "color": "orange", "value": 1000 },
+              { "color": "red", "value": 3000 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 5,
       "title": "Failure Rate (per hour)",
       "description": "Rate of VPN failures over the last hour",
       "type": "timeseries",
-      "gridPos": { "h": 10, "w": 18, "x": 0, "y": 16 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 26 },
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
