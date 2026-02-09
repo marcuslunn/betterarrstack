@@ -10,6 +10,13 @@ STAGING_DIR="/tmp/arrdocker-backup-$TIMESTAMP"
 ARCHIVE_NAME="arrdocker-backup-$TIMESTAMP.tar.gz"
 RCLONE_REMOTE="protondrive:arrdocker-backups"
 
+# ── Ensure temp files are cleaned up on exit (success, failure, or signal) ──
+cleanup() {
+  echo "  Cleaning up temporary files..."
+  rm -rf "$STAGING_DIR" "/tmp/$ARCHIVE_NAME"
+}
+trap cleanup EXIT
+
 echo "[$TIMESTAMP] Starting arrdocker backup..."
 
 # ── Stage config directories ─────────────────────────────────
@@ -53,8 +60,5 @@ rclone copy "/tmp/$ARCHIVE_NAME" "$RCLONE_REMOTE/"
 # ── Prune old backups (older than 30 days) ────────────────────
 echo "  Pruning backups older than 30 days..."
 rclone delete "$RCLONE_REMOTE/" --min-age 30d
-
-# ── Cleanup ───────────────────────────────────────────────────
-rm -rf "$STAGING_DIR" "/tmp/$ARCHIVE_NAME"
 
 echo "[$TIMESTAMP] Backup complete: $ARCHIVE_NAME"
