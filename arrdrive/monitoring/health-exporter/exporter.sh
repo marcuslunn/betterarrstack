@@ -84,27 +84,12 @@ parse_containers() {
 }
 
 # Determine the correct address to reach a container
-# VPN-routed services (sonarr, radarr, prowlarr, sabnzbd) are accessed via gluetun
+# All services are reached via host-published ports since health-exporter
+# runs in the monitoring compose project, separate from main services.
 get_probe_address() {
   name="$1"
   port="$2"
-
-  # Check if the container uses gluetun's network (query via unix socket)
-  network_mode=$(echo -e "GET /containers/${name}/json HTTP/1.0\r\nHost: localhost\r\n\r\n" \
-    | socat - UNIX-CONNECT:"$DOCKER_SOCKET" 2>/dev/null \
-    | sed '1,/^\r$/d' \
-    | grep -o '"NetworkMode":"[^"]*"' | sed 's/"NetworkMode":"//;s/"//')
-
-  case "$network_mode" in
-    *gluetun*|*service:gluetun*)
-      # VPN-routed: reach via host.docker.internal (gluetun publishes the ports)
-      echo "host.docker.internal:${port}"
-      ;;
-    *)
-      # Standard networking: reach via container name on docker network
-      echo "${name}:${port}"
-      ;;
-  esac
+  echo "host.docker.internal:${port}"
 }
 
 # Use HTTPS for known HTTPS-only services

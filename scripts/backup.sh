@@ -29,6 +29,7 @@ done
 
 # ── Copy compose, env, and monitoring config ──────────────────
 cp "$PROJECT_DIR/docker-compose.yml" "$STAGING_DIR/"
+cp "$PROJECT_DIR/docker-compose.monitoring.yml" "$STAGING_DIR/"
 [[ -f "$PROJECT_DIR/.env" ]] && cp "$PROJECT_DIR/.env" "$STAGING_DIR/"
 cp -r "$PROJECT_DIR/arrdrive/monitoring" "$STAGING_DIR/"
 

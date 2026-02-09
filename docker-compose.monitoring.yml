@@ -1,0 +1,185 @@
+name: arrdocker-monitoring
+
+services:
+  # ── Monitoring ──────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    user: "65534:65534"
+    environment:
+      - TZ=${TZ}=value
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./arrdrive/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./arrdrive/config/prometheus:/prometheus
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    environment:
+      - TZ=${TZ}=value
+    privileged: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    environment:
+      - TZ=${TZ}=value
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    restart: unless-stopped
+
+  # ── Service Exporters (Prometheus metrics for arr stack) ────
+  exportarr-sonarr:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: exportarr-sonarr
+    command: ["sonarr"]
+    environment:
+      - PORT=9707
+      - URL=http://host.docker.internal:8989
+      - APIKEY=${SONARR_API_KEY}
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9707:9707"
+    restart: unless-stopped
+
+  exportarr-radarr:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: exportarr-radarr
+    command: ["radarr"]
+    environment:
+      - PORT=9708
+      - URL=http://host.docker.internal:7878
+      - APIKEY=${RADARR_API_KEY}
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9708:9708"
+    restart: unless-stopped
+
+  exportarr-prowlarr:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: exportarr-prowlarr
+    command: ["prowlarr"]
+    environment:
+      - PORT=9709
+      - URL=http://host.docker.internal:9696
+      - APIKEY=${PROWLARR_API_KEY}
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9709:9709"
+    restart: unless-stopped
+
+  exportarr-sabnzbd:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: exportarr-sabnzbd
+    command: ["sabnzbd"]
+    environment:
+      - PORT=9710
+      - URL=http://host.docker.internal:8080
+      - APIKEY=${SABNZBD_API_KEY}
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9710:9710"
+    restart: unless-stopped
+
+  tautulli-exporter:
+    build: ./arrdrive/monitoring/tautulli-exporter
+    container_name: tautulli-exporter
+    environment:
+      - TAUTULLI_URL=http://host.docker.internal:8181
+      - TAUTULLI_API_KEY=${TAUTULLI_API_KEY}
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9711:9711"
+    restart: unless-stopped
+
+  vpn-exporter:
+    build: ./arrdrive/monitoring/vpn-exporter
+    container_name: vpn-exporter
+    environment:
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "9101:9101"
+    restart: unless-stopped
+
+  health-exporter:
+    build: ./arrdrive/monitoring/health-exporter
+    container_name: health-exporter
+    environment:
+      - TZ=${TZ}=value
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "9112:9112"
+    restart: unless-stopped
+
+  # ── Management ──────────────────────────────────────────────
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    environment:
+      - TZ=${TZ}=value
+    ports:
+      - "9443:9443"
+     #- "8000:8000"
+    volumes:
+      - ./arrdrive/config/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-enterprise:latest
+    container_name: grafana
+    user: "472:472"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - TZ=${TZ}=value
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./arrdrive/config/grafana:/var/lib/grafana
+      - ./arrdrive/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./arrdrive/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./arrdrive/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    restart: unless-stopped
