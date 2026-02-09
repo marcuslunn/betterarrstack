@@ -15,17 +15,26 @@ echo "[$TIMESTAMP] Starting arrdocker backup..."
 # ── Stage config directories ─────────────────────────────────
 mkdir -p "$STAGING_DIR/config"
 
+FAILED_SERVICES=()
 for svc in gluetun sonarr radarr prowlarr sabnzbd plex tautulli overseerr portainer prometheus grafana; do
   if [[ -d "$PROJECT_DIR/arrdrive/config/$svc" ]]; then
-    rsync -a \
+    if ! rsync -a \
+      --no-perms --no-owner --no-group \
       --exclude='Cache' \
       --exclude='Logs' \
       --exclude='logs' \
       --exclude='Transcode' \
       --exclude='MediaCover' \
-      "$PROJECT_DIR/arrdrive/config/$svc/" "$STAGING_DIR/config/$svc/"
+      "$PROJECT_DIR/arrdrive/config/$svc/" "$STAGING_DIR/config/$svc/" 2>&1; then
+      echo "  WARNING: Failed to backup $svc config (permission denied?), skipping..."
+      FAILED_SERVICES+=("$svc")
+    fi
   fi
 done
+
+if [[ ${#FAILED_SERVICES[@]} -gt 0 ]]; then
+  echo "  WARNING: Could not backup configs for: ${FAILED_SERVICES[*]}"
+fi
 
 # ── Copy compose, env, and monitoring config ──────────────────
 cp "$PROJECT_DIR/docker-compose.yml" "$STAGING_DIR/"
