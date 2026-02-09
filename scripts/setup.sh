@@ -73,15 +73,17 @@ else
   echo ">> .env already exists, skipping"
 fi
 
-# ── Add backup cron job ──────────────────────────────────────
+# ── Add cron jobs ─────────────────────────────────────────────
 BACKUP_CRON="0 3 * * * /usr/bin/bash $PROJECT_DIR/scripts/backup.sh >> /var/log/arrdocker-backup.log 2>&1"
 VPN_CRON="*/5 * * * * /usr/bin/bash $PROJECT_DIR/scripts/vpn-healthcheck.sh >> /var/log/arrdocker-vpn.log 2>&1"
+DEPLOY_CRON="* * * * * /usr/bin/bash $PROJECT_DIR/scripts/deploy.sh >> /var/log/arrdocker-deploy.log 2>&1"
 
 if ! crontab -u "$REAL_USER" -l 2>/dev/null | grep -qF "arrdocker"; then
   echo ">> Adding cron jobs..."
-  (crontab -u "$REAL_USER" -l 2>/dev/null || true; echo "$BACKUP_CRON"; echo "$VPN_CRON") | crontab -u "$REAL_USER" -
+  (crontab -u "$REAL_USER" -l 2>/dev/null || true; echo "$BACKUP_CRON"; echo "$VPN_CRON"; echo "$DEPLOY_CRON") | crontab -u "$REAL_USER" -
   echo "   Backup: daily at 3:00 AM"
   echo "   VPN health check: every 5 minutes"
+  echo "   Auto-deploy: every minute"
 else
   echo ">> Cron jobs already exist, skipping"
 fi

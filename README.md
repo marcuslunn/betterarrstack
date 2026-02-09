@@ -176,6 +176,25 @@ Six dashboards are auto-provisioned on startup:
 | **Download Pipeline** | SABnzbd speed/queue/status, Prowlarr indexer stats, grab/query rates |
 | **Plex (Tautulli)** | Active streams, transcode vs direct play, bandwidth (WAN/LAN), library size |
 
+## Auto-Deploy
+
+A cron job runs every minute (`scripts/deploy.sh`) that provides continuous deployment from GitHub without requiring inbound network access:
+
+1. Runs `git fetch` to check for new commits on `origin/main`
+2. Exits silently if already up to date (no log noise)
+3. Pulls changes and determines which files were modified
+4. Selectively restarts only the affected stack:
+   - `docker-compose.yml` or `.env` changes → main stack restart
+   - `docker-compose.monitoring.yml`, `exporters/`, `grafana/`, or `prometheus/` changes → monitoring stack restart
+   - Scripts or docs only → no restart
+5. Uses a lock file to prevent overlapping deploys
+
+Logs to `/var/log/arrdocker-deploy.log`. To run manually:
+
+```bash
+bash scripts/deploy.sh
+```
+
 ## VPN Health Check
 
 A cron job runs every 5 minutes (`scripts/vpn-healthcheck.sh`) that:
@@ -253,6 +272,7 @@ arrdocker/
 ├── scripts/
 │   ├── setup.sh
 │   ├── backup.sh
+│   ├── deploy.sh
 │   └── vpn-healthcheck.sh
 ```
 
