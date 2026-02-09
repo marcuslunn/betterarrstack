@@ -189,11 +189,7 @@ A cron job runs every minute (`scripts/deploy.sh`) that provides continuous depl
    - Scripts or docs only → no restart
 5. Uses a lock file to prevent overlapping deploys
 
-Logs to `/var/log/arrdocker-deploy.log`. To run manually:
-
-```bash
-bash scripts/deploy.sh
-```
+Logs to `/var/log/arrdocker-deploy.log`. See [Cron Jobs](#cron-jobs) for setup.
 
 ## VPN Health Check
 
@@ -204,7 +200,7 @@ A cron job runs every 5 minutes (`scripts/vpn-healthcheck.sh`) that:
 3. Restarts Gluetun if the tunnel is down
 4. Logs results to `/var/log/arrdocker-vpn.log`
 
-Additionally, the Docker health check on the Gluetun container ensures VPN-dependent services only start after a confirmed connection.
+Additionally, the Docker health check on the Gluetun container ensures VPN-dependent services only start after a confirmed connection. See [Cron Jobs](#cron-jobs) for setup.
 
 ## Backups
 
@@ -217,7 +213,30 @@ A daily cron job at 3:00 AM (`scripts/backup.sh`) handles automated config backu
 - Prunes remote backups older than 30 days
 - Logs to `/var/log/arrdocker-backup.log`
 
-**Setup:** Run `rclone config` to create a remote named `protondrive` pointing to your Proton Drive.
+**Setup:** Run `rclone config` to create a remote named `protondrive` pointing to your Proton Drive. See [Cron Jobs](#cron-jobs) for setup.
+
+## Cron Jobs
+
+The `setup.sh` script installs all three cron jobs automatically. To set them up manually instead, add any or all of the following to your crontab (`crontab -e`):
+
+```bash
+# Auto-deploy: pull git changes and restart affected stacks (every minute)
+* * * * * /usr/bin/bash /opt/arrdocker/scripts/deploy.sh >> /var/log/arrdocker-deploy.log 2>&1
+
+# VPN health check: restart gluetun if the tunnel drops (every 5 minutes)
+*/5 * * * * /usr/bin/bash /opt/arrdocker/scripts/vpn-healthcheck.sh >> /var/log/arrdocker-vpn.log 2>&1
+
+# Backup: archive configs and upload to Proton Drive (daily at 3:00 AM)
+0 3 * * * /usr/bin/bash /opt/arrdocker/scripts/backup.sh >> /var/log/arrdocker-backup.log 2>&1
+```
+
+> **Note:** Replace `/opt/arrdocker` with your actual project path. All three are optional — pick whichever ones suit your setup.
+
+| Job | Script | Schedule | Log |
+|-----|--------|----------|-----|
+| Auto-deploy | `scripts/deploy.sh` | Every minute | `/var/log/arrdocker-deploy.log` |
+| VPN health check | `scripts/vpn-healthcheck.sh` | Every 5 minutes | `/var/log/arrdocker-vpn.log` |
+| Backup | `scripts/backup.sh` | Daily at 3:00 AM | `/var/log/arrdocker-backup.log` |
 
 ## Directory Structure
 
