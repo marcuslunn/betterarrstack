@@ -9,7 +9,8 @@
       "WebFetch(domain:grafana.com)",
       "WebFetch(domain:rclone.org)",
       "Bash(git -C /Users/marcus/Documents/projects/arrdocker status)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

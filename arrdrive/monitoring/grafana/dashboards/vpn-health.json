@@ -172,8 +172,8 @@
                 "id": "mappings",
                 "value": [
                   { "options": { "gluetun_api": { "text": "Gluetun API" } }, "type": "value" },
-                  { "options": { "icanhazip_vpn": { "text": "icanhazip (via VPN)" } }, "type": "value" },
-                  { "options": { "icanhazip_host": { "text": "icanhazip (direct)" } }, "type": "value" }
+                  { "options": { "vpn": { "text": "icanhazip (via VPN)" } }, "type": "value" },
+                  { "options": { "host": { "text": "icanhazip (direct)" } }, "type": "value" }
                 ]
               },
               { "id": "custom.width", "value": 170 }
@@ -236,7 +236,7 @@
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
-          "expr": "vpn_public_ip_info{source=\"icanhazip_host\"}",
+          "expr": "vpn_public_ip_info{source=\"host\"}",
           "legendFormat": "{{ip}}",
           "instant": true
         }

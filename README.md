@@ -4,7 +4,11 @@ A complete Docker Compose media server stack for Ubuntu Server with VPN-routed d
 
 ## Services
 
-### Media & Downloads (VPN-routed via Gluetun)
+The stack is split into two independent compose files so monitoring and management stay online when you restart the main services.
+
+### Main Stack (`docker-compose.yml`)
+
+#### Media & Downloads (VPN-routed via Gluetun)
 
 All download-related services share Gluetun's network namespace and route traffic through a ProtonVPN WireGuard tunnel.
 
@@ -16,19 +20,19 @@ All download-related services share Gluetun's network namespace and route traffi
 | [Prowlarr](https://prowlarr.com) | 9696 | Indexer management |
 | [SABnzbd](https://sabnzbd.org) | 8080 | Usenet download client |
 
-### Media Server & Management
+#### Media Server & Requests
 
 | Service | Port | Description |
 |---------|------|-------------|
 | [Plex](https://plex.tv) | 32400 | Media server with Intel Quick Sync hardware transcoding |
 | [Tautulli](https://tautulli.com) | 8181 | Plex monitoring and analytics |
 | [Overseerr](https://overseerr.dev) | 5055 | Media request management |
-| [Portainer](https://portainer.io) | 9443 | Docker container management UI |
 
-### Monitoring
+### Monitoring & Management Stack (`docker-compose.monitoring.yml`)
 
 | Service | Port | Description |
 |---------|------|-------------|
+| [Portainer](https://portainer.io) | 9443 | Docker container management UI |
 | [Prometheus](https://prometheus.io) | 9090 | Metrics collection (30-day retention) |
 | [Grafana](https://grafana.com) | 3000 | Dashboards and visualization |
 | [cAdvisor](https://github.com/google/cadvisor) | 8081 | Container resource metrics |
@@ -58,6 +62,7 @@ All download-related services share Gluetun's network namespace and route traffi
 
 - **VPN-routed services** use `network_mode: "service:gluetun"` and communicate via `localhost`
 - **Non-VPN services** reach VPN-routed services via `host.docker.internal:<port>`
+- The monitoring stack communicates with main services via `host.docker.internal`, so the two compose projects are fully independent
 - Gluetun includes a Docker health check — dependent services wait for a confirmed VPN connection before starting
 
 ## Prerequisites
@@ -83,8 +88,11 @@ nano .env
 # 4. Configure rclone for Proton Drive backups (optional)
 rclone config
 
-# 5. Start the stack
+# 5. Start the main services
 docker compose up -d
+
+# 6. Start the monitoring & management stack
+docker compose -f docker-compose.monitoring.yml up -d
 ```
 
 ## Configuration
@@ -106,11 +114,15 @@ Copy `.env.example` to `.env` and fill in your values:
 | `GRAFANA_ADMIN_USER` | Grafana admin username | — |
 | `GRAFANA_ADMIN_PASSWORD` | Grafana admin password | — |
 
-> **Note:** `PUID`, `PGID`, and `TZ` are auto-detected by `setup.sh`. API keys for the *arr apps and Tautulli are generated on first launch — start the stack, grab the keys from each app's settings, add them to `.env`, then restart the exporters.
+> **Note:** `PUID`, `PGID`, and `TZ` are auto-detected by `setup.sh`. API keys for the *arr apps and Tautulli are generated on first launch — start the stack, grab the keys from each app's settings, add them to `.env`, then restart the exporters:
+>
+> ```bash
+> docker compose -f docker-compose.monitoring.yml restart exportarr-sonarr exportarr-radarr exportarr-prowlarr exportarr-sabnzbd tautulli-exporter
+> ```
 
 ### Post-Deployment Service Setup
 
-After `docker compose up -d`, configure each service through its web UI:
+After starting both stacks, configure each service through its web UI:
 
 **SABnzbd** (`localhost:8080`) — Add Usenet server credentials. Set complete folder to `/data/sabnzbd/complete`, incomplete to `/data/sabnzbd/incomplete`.
 
@@ -127,6 +139,29 @@ After `docker compose up -d`, configure each service through its web UI:
 **Overseerr** (`localhost:5055`) — Connect to Plex at `http://host.docker.internal:32400`, Sonarr at `http://host.docker.internal:8989`, Radarr at `http://host.docker.internal:7878`.
 
 **Grafana** (`localhost:3000`) — Add Prometheus data source at `http://prometheus:9090`. Dashboards are auto-provisioned in the "arrdocker" folder.
+
+## Stack Management
+
+The two compose projects are fully independent — you can restart one without affecting the other.
+
+```bash
+# ── Main services ────────────────────────────────────────────
+docker compose up -d                          # Start
+docker compose down                           # Stop
+docker compose restart sonarr                 # Restart a single service
+docker compose logs -f gluetun                # Follow logs
+
+# ── Monitoring & management ──────────────────────────────────
+docker compose -f docker-compose.monitoring.yml up -d       # Start
+docker compose -f docker-compose.monitoring.yml down        # Stop
+docker compose -f docker-compose.monitoring.yml logs -f grafana
+
+# ── Rebuild custom exporters after code changes ──────────────
+docker compose -f docker-compose.monitoring.yml up -d --build
+
+# ── View all containers across both stacks ───────────────────
+docker compose ps && docker compose -f docker-compose.monitoring.yml ps
+```
 
 ## Grafana Dashboards
 
@@ -157,7 +192,7 @@ Additionally, the Docker health check on the Gluetun container ensures VPN-depen
 A daily cron job at 3:00 AM (`scripts/backup.sh`) handles automated config backups:
 
 - Stages all service configs (excluding caches, logs, transcodes)
-- Includes `docker-compose.yml`, `.env`, and monitoring configs
+- Includes `docker-compose.yml`, `docker-compose.monitoring.yml`, `.env`, and monitoring configs
 - Creates a timestamped `.tar.gz` archive
 - Uploads to Proton Drive via `rclone`
 - Prunes remote backups older than 30 days
@@ -171,7 +206,8 @@ A daily cron job at 3:00 AM (`scripts/backup.sh`) handles automated config backu
 arrdocker/
 ├── .env.example
 ├── .gitignore
-├── docker-compose.yml
+├── docker-compose.yml              # Main services (8)
+├── docker-compose.monitoring.yml   # Monitoring & management (12)
 ├── README.md
 ├── arrdrive/
 │   ├── monitoring/
@@ -182,7 +218,11 @@ arrdocker/
 │   │   ├── tautulli-exporter/
 │   │   │   ├── Dockerfile
 │   │   │   └── exporter.sh
+│   │   ├── health-exporter/
+│   │   │   ├── Dockerfile
+│   │   │   └── exporter.sh
 │   │   └── grafana/
+│   │       ├── datasources.yml
 │   │       ├── dashboards.yml
 │   │       └── dashboards/
 │   │           ├── host-health.json
@@ -218,11 +258,14 @@ arrdocker/
 
 ## Verification
 
-After starting the stack:
+After starting both stacks:
 
 ```bash
-# Check all containers are running
+# Check main services are running
 docker compose ps
+
+# Check monitoring services are running
+docker compose -f docker-compose.monitoring.yml ps
 
 # Verify VPN tunnel
 docker exec gluetun wget -qO- ifconfig.me
