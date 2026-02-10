@@ -129,6 +129,7 @@ services:
     volumes:
       - ./arrdrive/config/plex:/config
       - ./arrdrive/data/Media:/data/Media:ro
+      - ./arrdrive/plex/tmp-transcode:/tmp:rw  # Use host tmpfs for transcoding
     restart: unless-stopped
 
   # ── Plex Monitoring ─────────────────────────────────────────
