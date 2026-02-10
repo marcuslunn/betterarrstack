@@ -26,6 +26,13 @@ services:
     environment:
       - TZ=${TZ}=value
     privileged: true
+    command:
+      - "--housekeeping_interval=10s"           # Default: 1s - Reduce internal housekeeping frequency
+      - "--max_housekeeping_interval=60s"       # Default: 60s - Max interval between housekeeping
+      - "--docker_only=true"                    # Only monitor Docker containers, not host system
+      - "--disable_metrics=percpu,sched,tcp,udp,diskIO,disk,network,hugetlb,referenced_memory,cpu_topology,resctrl"  # Disable unused metrics
+      - "--store_container_labels=false"        # Don't store container labels to reduce memory
+      - "--allow_dynamic_housekeeping=true"     # Dynamically adjust housekeeping based on activity
     ports:
       - "8081:8080"
     volumes:
@@ -138,19 +145,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "9101:9101"
-    restart: unless-stopped
-
-  health-exporter:
-    build: ./arrdrive/monitoring/health-exporter
-    container_name: health-exporter
-    environment:
-      - TZ=${TZ}=value
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - "9112:9112"
     restart: unless-stopped
 
   # ── Management ──────────────────────────────────────────────

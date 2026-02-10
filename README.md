@@ -256,9 +256,6 @@ arrdocker/
 │   │   ├── tautulli-exporter/
 │   │   │   ├── Dockerfile
 │   │   │   └── exporter.sh
-│   │   ├── health-exporter/
-│   │   │   ├── Dockerfile
-│   │   │   └── exporter.sh
 │   │   └── grafana/
 │   │       ├── datasources.yml
 │   │       ├── dashboards.yml
