@@ -16,6 +16,7 @@ services:
       - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-Netherlands}
       - HTTPPROXY=on
       - HTTPPROXY_LISTENING_ADDRESS=:8888
+      - HTTP_CONTROL_SERVER_AUTH=false
       - TZ=${TZ}
     ports:
       # Sonarr
