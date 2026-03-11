@@ -16,7 +16,7 @@ services:
       - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-Netherlands}
       - HTTPPROXY=on
       - HTTPPROXY_LISTENING_ADDRESS=:8888
-      - TZ=${TZ}=value
+      - TZ=${TZ}
     ports:
       # Sonarr
       - "8989:8989"
@@ -31,7 +31,7 @@ services:
       # Gluetun control API (used by vpn-exporter for VPN status)
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "--timeout=10", "http://localhost:8000/v1/publicip/ip"]
+      test: ["CMD", "wget", "-qO-", "--timeout=10", "http://127.0.0.1:9999/"]
       interval: 60s
       timeout: 15s
       retries: 3
