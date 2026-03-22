@@ -13,10 +13,13 @@ services:
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-Netherlands}
+      - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-United States}
+      - FREE_ONLY=off
       - HTTPPROXY=on
       - HTTPPROXY_LISTENING_ADDRESS=:8888
-      - TZ=${TZ}=value
+      - DNS_ADDRESS=1.1.1.1
+      - TZ=${TZ}
+      - VPN_MTU=1320
     ports:
       # Sonarr
       - "8989:8989"
