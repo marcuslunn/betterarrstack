@@ -10,7 +10,9 @@
       "WebFetch(domain:rclone.org)",
       "Bash(git -C /Users/marcus/Documents/projects/arrdocker status)",
       "Bash(grep:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/Users/marcus/Documents/projects/betterarrstack/arrdrive/config/gluetun/servers.json'\\)\\)\" 2>&1 && echo \"Valid JSON\")",
+      "WebSearch"
     ]
   }
 }
