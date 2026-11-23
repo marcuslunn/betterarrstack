@@ -10,11 +10,11 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     environment:
-      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_SERVICE_PROVIDER=mullvad
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-United States}
-      - FREE_ONLY=off
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=${VPN_SERVER_COUNTRY:-USA}
       - HTTPPROXY=on
       - HTTPPROXY_LISTENING_ADDRESS=:8888
       - DNS_ADDRESS=1.1.1.1
@@ -28,6 +28,8 @@ services:
       - "7878:7878"
       # Prowlarr
       - "9696:9696"
+      # Whisparr
+      - "6969:6969"
       # SABnzbd
       - "8080:8080"
       # Gluetun HTTP proxy (used by vpn-exporter for IP verification)
@@ -90,6 +92,22 @@ services:
       - TZ=${TZ}
     volumes:
       - ./arrdrive/config/prowlarr:/config
+    restart: unless-stopped
+
+  whisparr:
+    image: ghcr.io/hotio/whisparr:latest
+    container_name: whisparr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./arrdrive/config/whisparr:/config
+      - ./arrdrive/data:/data/whisparr
     restart: unless-stopped
 
   sabnzbd:

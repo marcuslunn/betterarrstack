@@ -10,11 +10,11 @@ The stack is split into two independent compose files so monitoring and manageme
 
 #### Media & Downloads (VPN-routed via Gluetun)
 
-All download-related services share Gluetun's network namespace and route traffic through a ProtonVPN WireGuard tunnel.
+All download-related services share Gluetun's network namespace and route traffic through a Mullvad WireGuard tunnel.
 
 | Service | Port | Description |
 |---------|------|-------------|
-| [Gluetun](https://github.com/qdm12/gluetun) | — | VPN gateway (ProtonVPN WireGuard) |
+| [Gluetun](https://github.com/qdm12/gluetun) | — | VPN gateway (Mullvad WireGuard) |
 | [Sonarr](https://sonarr.tv) | 8989 | TV show management |
 | [Radarr](https://radarr.video) | 7878 | Movie management |
 | [Prowlarr](https://prowlarr.com) | 9696 | Indexer management |
@@ -46,7 +46,7 @@ All download-related services share Gluetun's network namespace and route traffi
 ```
              INTERNET
                 |
-           [ gluetun ] ── WireGuard tunnel ── ProtonVPN
+           [ gluetun ] ── WireGuard tunnel ── Mullvad
            ports: 8989, 7878, 9696, 8080
                 |
       shared network namespace:
@@ -69,7 +69,7 @@ All download-related services share Gluetun's network namespace and route traffi
 
 - Ubuntu Server (20.04+)
 - Docker and Docker Compose installed
-- A ProtonVPN account with WireGuard credentials
+- A Mullvad account with a generated WireGuard config
 - Intel CPU with Quick Sync (for Plex hardware transcoding — optional)
 
 ## Quick Start
@@ -103,7 +103,8 @@ Copy `.env.example` to `.env` and fill in your values:
 
 | Variable | Description | Where to find it |
 |----------|-------------|-----------------|
-| `WIREGUARD_PRIVATE_KEY` | ProtonVPN WireGuard private key | ProtonVPN account > WireGuard config |
+| `WIREGUARD_PRIVATE_KEY` | Mullvad WireGuard private key | Mullvad account > WireGuard configuration (`PrivateKey`) |
+| `WIREGUARD_ADDRESSES` | Mullvad WireGuard interface address (IPv4, e.g. `10.64.x.x/32`) | Same config file (`Address`) |
 | `VPN_SERVER_COUNTRY` | VPN exit country (default: Netherlands) | — |
 | `PLEX_CLAIM_TOKEN` | Plex server claim token | [plex.tv/claim](https://plex.tv/claim) |
 | `SONARR_API_KEY` | Sonarr API key | Sonarr > Settings > General |
